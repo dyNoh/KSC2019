@@ -19,6 +19,7 @@
 #include "blk.h"
 #include "blk-wbt.h"
 #include <linux/smp.h>
+#include <linux/printk.h>
 
 /*
  * tunables
