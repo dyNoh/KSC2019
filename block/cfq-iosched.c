@@ -23,7 +23,26 @@
  * tunables
  */
 /* max queue in one round of service */
-static const int cfq_quantum = 8;
+//static const int cfq_quantum = 8;
+
+//09.26 update start
+#if smp_processor_id == 0
+	static const int cfq_quantum = 100;
+#elif smp_processor_id == 2
+	static const int cfq_quantum = 50;
+#elif smp_processor_id == 4
+	static const int cfq_quantum = 25;
+#elif smp_processor_id == 6
+	static const int cfq_quantum = 10;
+#else
+	static const int cfq_quantum = 8;
+#endif
+
+#if 1
+	printk(KERN_INFO "smp_processor_id = %d \ncfq_quantum = %d", smp_processor_id, cfq_quantum);
+#endif
+//09.26 update end
+
 static const u64 cfq_fifo_expire[2] = { NSEC_PER_SEC / 4, NSEC_PER_SEC / 8 };
 /* maximum backwards seek, in KiB */
 static const int cfq_back_max = 16 * 1024;
