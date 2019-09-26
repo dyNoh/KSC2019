@@ -18,6 +18,7 @@
 #include <linux/blk-cgroup.h>
 #include "blk.h"
 #include "blk-wbt.h"
+#include <linux/smp.h>
 
 /*
  * tunables
