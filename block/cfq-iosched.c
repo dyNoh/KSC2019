@@ -25,29 +25,47 @@
  * tunables
  */
 /* max queue in one round of service */
-//static const int cfq_quantum = 8;
+static int cfq_quantum = 8;
+
+//09.26 update start
+static int set_cfq_quantum(void) {
+	if(smp_processor_id() == 0)
+		cfq_quantum = 100;
+	else if(smp_processor_id() == 2)
+		cfq_quantum = 50;
+	else if(smp_processor_id() == 4)
+		cfq_quantum = 25;
+	else if(smp_processor_id() == 6)
+		cfq_quantum = 10;
+	else
+		cfq_quantum = 8;
+
+	printk(KERN_INFO "smp_processor_id = %d\n", smp_processor_id());
+	printk(KERN_INFO "cfq_quantum = %d\n", cfq_quantum);
+
+}
 
 //09.26 update start
 #if smp_processor_id() == 0
 	static const int cfq_quantum = 100;
-	printk("smp_processor_id = %d\n", smp_processor_id());
-	printk("cfq_quantum = %d\n", cfq_quantum);
+//	printk("smp_processor_id = %d\n", smp_processor_id());
+//	printk("cfq_quantum = %d\n", cfq_quantum);
 #elif smp_processor_id() == 2
 	static const int cfq_quantum = 50;
-	printk("smp_processor_id = %d\n", smp_processor_id());
-	printk("cfq_quantum = %d\n", cfq_quantum);
+//	printk("smp_processor_id = %d\n", smp_processor_id());
+//	printk("cfq_quantum = %d\n", cfq_quantum);
 #elif smp_processor_id() == 4
 	static const int cfq_quantum = 25;
-	printk("smp_processor_id = %d\n", smp_processor_id());
-	printk("cfq_quantum = %d\n", cfq_quantum);
+//	printk("smp_processor_id = %d\n", smp_processor_id());
+//	printk("cfq_quantum = %d\n", cfq_quantum);
 #elif smp_processor_id() == 6
 	static const int cfq_quantum = 10;
-	printk("smp_processor_id = %d\n", smp_processor_id());
-	printk("cfq_quantum = %d\n"
+//	printk("smp_processor_id = %d\n", smp_processor_id());
+//	printk("cfq_quantum = %d\n"
 #else
 	static const int cfq_quantum = 8;
-	printk("smp_processor_id = %d\n", smp_processor_id());
-	printk("cfq_quantum = %d\n", cfq_quantum);
+//	printk("smp_processor_id = %d\n", smp_processor_id());
+//	printk("cfq_quantum = %d\n", cfq_quantum);
 #endif
 //09.26 update end
 
@@ -4597,6 +4615,8 @@ static int cfq_init_queue(struct request_queue *q, struct elevator_type *e)
 	struct blkcg_gq *blkg __maybe_unused;
 	int i, ret;
 	struct elevator_queue *eq;
+
+	set_cfq_quantum(); // add
 
 	eq = elevator_alloc(q, e);
 	if (!eq)
