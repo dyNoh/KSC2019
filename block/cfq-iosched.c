@@ -28,20 +28,20 @@
 //static const int cfq_quantum = 8;
 
 //09.26 update start
-#if smp_processor_id == 0
+#if smp_processor_id() == 0
 	static const int cfq_quantum = 100;
-#elif smp_processor_id == 2
+#elif smp_processor_id() == 2
 	static const int cfq_quantum = 50;
-#elif smp_processor_id == 4
+#elif smp_processor_id() == 4
 	static const int cfq_quantum = 25;
-#elif smp_processor_id == 6
+#elif smp_processor_id() == 6
 	static const int cfq_quantum = 10;
 #else
 	static const int cfq_quantum = 8;
 #endif
 
 #if 1
-	printk(KERN_INFO "smp_processor_id = %d \ncfq_quantum = %d", smp_processor_id, cfq_quantum);
+	printk("smp_processor_id = %d \ncfq_quantum = %d", smp_processor_id(), cfq_quantum);
 #endif
 //09.26 update end
 
