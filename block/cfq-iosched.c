@@ -30,17 +30,18 @@
 //09.26 update start
 #if smp_processor_id() == 0
 	static const int cfq_quantum = 100;
+	printk("smp_processor_id = %d \ncfq_quantum = %d", smp_processor_id(), cfq_quantum);
 #elif smp_processor_id() == 2
 	static const int cfq_quantum = 50;
+	printk("smp_processor_id = %d \ncfq_quantum = %d", smp_processor_id(), cfq_quantum);
 #elif smp_processor_id() == 4
 	static const int cfq_quantum = 25;
+	printk("smp_processor_id = %d \ncfq_quantum = %d", smp_processor_id(), cfq_quantum);
 #elif smp_processor_id() == 6
 	static const int cfq_quantum = 10;
+	printk("smp_processor_id = %d \ncfq_quantum = %d", smp_processor_id(), cfq_quantum);
 #else
 	static const int cfq_quantum = 8;
-#endif
-
-#if 1
 	printk("smp_processor_id = %d \ncfq_quantum = %d", smp_processor_id(), cfq_quantum);
 #endif
 //09.26 update end
