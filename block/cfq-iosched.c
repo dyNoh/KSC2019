@@ -16,10 +16,10 @@
 #include <linux/ioprio.h>
 #include <linux/blktrace_api.h>
 #include <linux/blk-cgroup.h>
-#include "blk.h"
-#include "blk-wbt.h"
 #include <linux/smp.h>
 #include <linux/printk.h>
+#include "blk.h"
+#include "blk-wbt.h"
 
 /*
  * tunables
@@ -30,19 +30,24 @@
 //09.26 update start
 #if smp_processor_id() == 0
 	static const int cfq_quantum = 100;
-	printk("smp_processor_id = %d \ncfq_quantum = %d", smp_processor_id(), cfq_quantum);
+	printk("smp_processor_id = %d\n", smp_processor_id());
+	printk("cfq_quantum = %d\n", cfq_quantum);
 #elif smp_processor_id() == 2
 	static const int cfq_quantum = 50;
-	printk("smp_processor_id = %d \ncfq_quantum = %d", smp_processor_id(), cfq_quantum);
+	printk("smp_processor_id = %d\n", smp_processor_id());
+	printk("cfq_quantum = %d\n", cfq_quantum);
 #elif smp_processor_id() == 4
 	static const int cfq_quantum = 25;
-	printk("smp_processor_id = %d \ncfq_quantum = %d", smp_processor_id(), cfq_quantum);
+	printk("smp_processor_id = %d\n", smp_processor_id());
+	printk("cfq_quantum = %d\n", cfq_quantum);
 #elif smp_processor_id() == 6
 	static const int cfq_quantum = 10;
-	printk("smp_processor_id = %d \ncfq_quantum = %d", smp_processor_id(), cfq_quantum);
+	printk("smp_processor_id = %d\n", smp_processor_id());
+	printk("cfq_quantum = %d\n"
 #else
 	static const int cfq_quantum = 8;
-	printk("smp_processor_id = %d \ncfq_quantum = %d", smp_processor_id(), cfq_quantum);
+	printk("smp_processor_id = %d\n", smp_processor_id());
+	printk("cfq_quantum = %d\n", cfq_quantum);
 #endif
 //09.26 update end
 
