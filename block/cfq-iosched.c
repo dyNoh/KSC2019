@@ -28,7 +28,7 @@
 static int cfq_quantum = 8;
 
 //09.26 update start
-static int set_cfq_quantum(void) {
+/*static void set_cfq_quantum(void) {
 	if(smp_processor_id() == 0)
 		cfq_quantum = 100;
 	else if(smp_processor_id() == 2)
@@ -43,30 +43,30 @@ static int set_cfq_quantum(void) {
 	printk(KERN_INFO "smp_processor_id = %d\n", smp_processor_id());
 	printk(KERN_INFO "cfq_quantum = %d\n", cfq_quantum);
 
-}
+};*/
 
 //09.26 update start
-#if smp_processor_id() == 0
-	static const int cfq_quantum = 100;
+//#if smp_processor_id() == 0
+//	static const int cfq_quantum = 100;
 //	printk("smp_processor_id = %d\n", smp_processor_id());
 //	printk("cfq_quantum = %d\n", cfq_quantum);
-#elif smp_processor_id() == 2
-	static const int cfq_quantum = 50;
+//#elif smp_processor_id() == 2
+//	static const int cfq_quantum = 50;
 //	printk("smp_processor_id = %d\n", smp_processor_id());
 //	printk("cfq_quantum = %d\n", cfq_quantum);
-#elif smp_processor_id() == 4
-	static const int cfq_quantum = 25;
+//#elif smp_processor_id() == 4
+//	static const int cfq_quantum = 25;
 //	printk("smp_processor_id = %d\n", smp_processor_id());
 //	printk("cfq_quantum = %d\n", cfq_quantum);
-#elif smp_processor_id() == 6
-	static const int cfq_quantum = 10;
+//#elif smp_processor_id() == 6
+//	static const int cfq_quantum = 10;
 //	printk("smp_processor_id = %d\n", smp_processor_id());
 //	printk("cfq_quantum = %d\n"
-#else
-	static const int cfq_quantum = 8;
+//#else
+//	static const int cfq_quantum = 8;
 //	printk("smp_processor_id = %d\n", smp_processor_id());
 //	printk("cfq_quantum = %d\n", cfq_quantum);
-#endif
+//#endif
 //09.26 update end
 
 static const u64 cfq_fifo_expire[2] = { NSEC_PER_SEC / 4, NSEC_PER_SEC / 8 };
@@ -3443,6 +3443,22 @@ static bool cfq_may_dispatch(struct cfq_data *cfqd, struct cfq_queue *cfqq)
 {
 	unsigned int max_dispatch;
 
+	if(smp_processor_id() == 0)
+		cfqd->cfq_quantum = 100;
+	else if(smp_processor_id() == 2)
+		cfqd->cfq_quantum = 50;
+	else if(smp_processor_id() == 4)
+		cfqd->cfq_quantum = 25;
+	else if(smp_processor_id() == 6)
+		cfqd->cfq_quantum = 10;
+	else
+		cfqd->cfq_quantum = 8;
+
+	printk(KERN_INFO "smp_processor_id = %d\n", smp_processor_id());
+	printk(KERN_INFO "cfq_quantum = %d\n", cfqd->cfq_quantum);
+	printk(KERN_INFO "origin = %d\n", cfq_quantum);
+
+
 	if (cfq_cfqq_must_dispatch(cfqq))
 		return true;
 
@@ -3575,6 +3591,10 @@ static int cfq_dispatch_requests(struct request_queue *q, int force)
 {
 	struct cfq_data *cfqd = q->elevator->elevator_data;
 	struct cfq_queue *cfqq;
+
+//	printk(KERN_INFO "I'm in cfq_dispatch_requests\n");
+//	printk(KERN_INFO "cfq_quantum = %d\n", cfq_quantum);
+//	printk(KERN_INFO "processor_id = %d\n", smp_processor_id());
 
 	if (!cfqd->busy_queues)
 		return 0;
@@ -4172,6 +4192,10 @@ static void cfq_insert_request(struct request_queue *q, struct request *rq)
 	struct cfq_data *cfqd = q->elevator->elevator_data;
 	struct cfq_queue *cfqq = RQ_CFQQ(rq);
 
+//	printk(KERN_INFO "I'm in cfq_insert_request\n");
+//	printk(KERN_INFO "cfq_quantum = %d\n", cfq_quantum);
+//	printk(KERN_INFO "processor_id = %d\n", smp_processor_id());
+
 	cfq_log_cfqq(cfqd, cfqq, "insert_request");
 	cfq_init_prio_data(cfqq, RQ_CIC(rq));
 
@@ -4181,6 +4205,8 @@ static void cfq_insert_request(struct request_queue *q, struct request *rq)
 	cfqg_stats_update_io_add(RQ_CFQG(rq), cfqd->serving_group,
 				 rq->cmd_flags);
 	cfq_rq_enqueued(cfqd, cfqq, rq);
+
+//	printk(KERN_INFO "I'm out cfq_insert_request\n");
 }
 
 /*
@@ -4590,6 +4616,8 @@ static void cfq_exit_queue(struct elevator_queue *e)
 	struct cfq_data *cfqd = e->elevator_data;
 	struct request_queue *q = cfqd->queue;
 
+	printk(KERN_INFO "I'm in cfq_exit_queue\n");
+
 	cfq_shutdown_timer_wq(cfqd);
 
 	spin_lock_irq(q->queue_lock);
@@ -4616,7 +4644,11 @@ static int cfq_init_queue(struct request_queue *q, struct elevator_type *e)
 	int i, ret;
 	struct elevator_queue *eq;
 
-	set_cfq_quantum(); // add
+//	set_cfq_quantum(); // add
+
+//	printk(KERN_INFO "I'm in cfq_init_queue\n");
+//	printk(KERN_INFO "cfq_quantum = %d\n", cfq_quantum);
+//	printk(KERN_INFO "processor_id = %d\n", smp_processor_id());
 
 	eq = elevator_alloc(q, e);
 	if (!eq)
