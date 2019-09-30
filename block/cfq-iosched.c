@@ -4192,9 +4192,9 @@ static void cfq_insert_request(struct request_queue *q, struct request *rq)
 	struct cfq_data *cfqd = q->elevator->elevator_data;
 	struct cfq_queue *cfqq = RQ_CFQQ(rq);
 
-//	printk(KERN_INFO "I'm in cfq_insert_request\n");
-//	printk(KERN_INFO "cfq_quantum = %d\n", cfq_quantum);
-//	printk(KERN_INFO "processor_id = %d\n", smp_processor_id());
+	printk(KERN_INFO "I'm in cfq_insert_request\n");
+	printk(KERN_INFO "nr_requests = %d\n", q->nr_requests);
+	printk(KERN_INFO "processor_id = %d\n", smp_processor_id());
 
 	cfq_log_cfqq(cfqd, cfqq, "insert_request");
 	cfq_init_prio_data(cfqq, RQ_CIC(rq));

@@ -15,12 +15,12 @@
 #include "blk.h"
 #include "blk-wbt.h"
 
-#define NR_REQUEST_SETTING
+//#define NR_REQUEST_SETTING
 
 #ifdef NR_REQUEST_SETTING
 
 #include <linux/smp.h>
-#include <linux/prkntk.h>
+#include <linux/printk.h>
 
 #endif
 
@@ -201,6 +201,10 @@ void blk_queue_make_request(struct request_queue *q, make_request_fn *mfn)
 
 #endif
 
+	//test
+	printk(KERN_INFO "I'm in blk_queue_make_request\n");
+	printk(KERN_INFO "smp_processor = %d\n", smp_processor_id());
+	printk(KERN_INFO "nr_request = %d\n", q->nr_requests);
 
 	q->make_request_fn = mfn;
 	blk_queue_dma_alignment(q, 511);
