@@ -25,7 +25,7 @@
  * tunables
  */
 /* max queue in one round of service */
-static int cfq_quantum = 8;
+static const int cfq_quantum = 8;
 
 //09.26 update start
 /*static void set_cfq_quantum(void) {
@@ -3443,7 +3443,7 @@ static bool cfq_may_dispatch(struct cfq_data *cfqd, struct cfq_queue *cfqq)
 {
 	unsigned int max_dispatch;
 
-	if(smp_processor_id() == 0)
+	/*if(smp_processor_id() == 0)
 		cfqd->cfq_quantum = 100;
 	else if(smp_processor_id() == 2)
 		cfqd->cfq_quantum = 50;
@@ -3457,7 +3457,7 @@ static bool cfq_may_dispatch(struct cfq_data *cfqd, struct cfq_queue *cfqq)
 	printk(KERN_INFO "smp_processor_id = %d\n", smp_processor_id());
 	printk(KERN_INFO "cfq_quantum = %d\n", cfqd->cfq_quantum);
 	printk(KERN_INFO "origin = %d\n", cfq_quantum);
-
+*/
 
 	if (cfq_cfqq_must_dispatch(cfqq))
 		return true;
@@ -4616,7 +4616,7 @@ static void cfq_exit_queue(struct elevator_queue *e)
 	struct cfq_data *cfqd = e->elevator_data;
 	struct request_queue *q = cfqd->queue;
 
-	printk(KERN_INFO "I'm in cfq_exit_queue\n");
+//	printk(KERN_INFO "I'm in cfq_exit_queue\n");
 
 	cfq_shutdown_timer_wq(cfqd);
 
