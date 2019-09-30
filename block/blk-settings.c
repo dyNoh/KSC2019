@@ -15,6 +15,15 @@
 #include "blk.h"
 #include "blk-wbt.h"
 
+#define NR_REQUEST_SETTING
+
+#ifdef NR_REQUEST_SETTING
+
+#include <linux/smp.h>
+#include <linux/prkntk.h>
+
+#endif
+
 unsigned long blk_max_low_pfn;
 EXPORT_SYMBOL(blk_max_low_pfn);
 
@@ -165,7 +174,33 @@ void blk_queue_make_request(struct request_queue *q, make_request_fn *mfn)
 	/*
 	 * set defaults
 	 */
+
+	
+// 09.30 NR_REQUEST_SETTING
+#ifdef NR_REQUEST_SETTING
+
+	if(smp_processor_id() == 0)
+		q->nr_requests = 100;
+	else if(smp_processor_id() == 2)
+		q->nr_requests = 50;
+	else if(smp_processor_id() == 4)
+		q->nr_requests = 25;
+	else if(smp_processor_id() == 6)
+		q->nr_requests = 10;
+	else
+		q->nr_requests = BLKDEV_MAX_RQ;
+
+	printk(KERN_INFO "smp_processor_id = %d\n", smp_processor_id());
+	printk(KERN_INFO "nr_request = %d\n", q->nr_requests);
+
+#endif 
+
+#ifndef NR_REQUEST_SETTING
+	
 	q->nr_requests = BLKDEV_MAX_RQ;
+
+#endif
+
 
 	q->make_request_fn = mfn;
 	blk_queue_dma_alignment(q, 511);
