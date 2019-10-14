@@ -27,7 +27,7 @@
 /* max queue in one round of service */
 static const int cfq_quantum = 8;
 
-//09.26 update start
+//_9.26 update start
 /*static void set_cfq_quantum(void) {
 	if(smp_processor_id() == 0)
 		cfq_quantum = 100;
@@ -3592,9 +3592,9 @@ static int cfq_dispatch_requests(struct request_queue *q, int force)
 	struct cfq_data *cfqd = q->elevator->elevator_data;
 	struct cfq_queue *cfqq;
 
-//	printk(KERN_INFO "I'm in cfq_dispatch_requests\n");
-//	printk(KERN_INFO "cfq_quantum = %d\n", cfq_quantum);
-//	printk(KERN_INFO "processor_id = %d\n", smp_processor_id());
+	printk(KERN_INFO "I'm in cfq_dispatch_requests\n");
+	printk(KERN_INFO "nr_requests = %d\n", (int)q->nr_requests);
+	printk(KERN_INFO "processor_id = %d\n", (int)smp_processor_id());
 
 	if (!cfqd->busy_queues)
 		return 0;

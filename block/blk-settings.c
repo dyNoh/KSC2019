@@ -17,12 +17,12 @@
 
 //#define NR_REQUEST_SETTING
 
-#ifdef NR_REQUEST_SETTING
+//#ifdef NR_REQUEST_SETTING
 
 #include <linux/smp.h>
 #include <linux/printk.h>
 
-#endif
+//#endif
 
 unsigned long blk_max_low_pfn;
 EXPORT_SYMBOL(blk_max_low_pfn);
@@ -175,9 +175,11 @@ void blk_queue_make_request(struct request_queue *q, make_request_fn *mfn)
 	 * set defaults
 	 */
 
+	q->nr_requests = BLKDEV_MAX_RQ;
+
 	
 // 09.30 NR_REQUEST_SETTING
-#ifdef NR_REQUEST_SETTING
+/*#ifdef NR_REQUEST_SETTING
 
 	if(smp_processor_id() == 0)
 		q->nr_requests = 100;
@@ -205,7 +207,7 @@ void blk_queue_make_request(struct request_queue *q, make_request_fn *mfn)
 	printk(KERN_INFO "I'm in blk_queue_make_request\n");
 	printk(KERN_INFO "smp_processor = %d\n", smp_processor_id());
 	printk(KERN_INFO "nr_request = %d\n", q->nr_requests);
-
+*/
 	q->make_request_fn = mfn;
 	blk_queue_dma_alignment(q, 511);
 	blk_queue_congestion_threshold(q);

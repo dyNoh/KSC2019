@@ -1840,7 +1840,9 @@ static blk_qc_t blk_mq_make_request(struct request_queue *q, struct bio *bio)
 	if (blk_mq_sched_bio_merge(q, bio))
 		return BLK_QC_T_NONE;
 
+	//printk(KERN_INFO "I'm in blk-mq\n");
 	rq_qos_throttle(q, bio, NULL);
+	//printk(KERN_INFO "finish blk-mq rq_qos_throttle\n");
 
 	trace_block_getrq(q, bio, bio->bi_opf);
 

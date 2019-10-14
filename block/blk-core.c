@@ -2057,7 +2057,9 @@ static blk_qc_t blk_queue_bio(struct request_queue *q, struct bio *bio)
 	}
 
 get_rq:
+	//printk(KERN_INFO "I'm in blk-core\n");
 	rq_qos_throttle(q, bio, q->queue_lock);
+	//printk(KERN_INFO "finish blk-core rq_qos_throttle\n");
 
 	/*
 	 * Grab a free request. This is might sleep but can not fail.
@@ -2394,6 +2396,7 @@ blk_qc_t generic_make_request(struct bio *bio)
 	struct request_queue *q = bio->bi_disk->queue;
 	blk_qc_t ret = BLK_QC_T_NONE;
 
+/*
 	//09.30 add
 	if(smp_processor_id() == 0)
 		q->nr_requests = 100;
@@ -2405,11 +2408,9 @@ blk_qc_t generic_make_request(struct bio *bio)
 		q->nr_requests = 10;
 	else
 		q->nr_requests = BLKDEV_MAX_RQ;
-
-	printk(KERN_INFO "I'm in generic_make_request\n");
-	printk(KERN_INFO "smp_processor_id = %d\n", (int)smp_processor_id());
-	printk(KERN_INFO "nr_requests = %d\n", (int)q->nr_requests);
-
+*/
+	if(smp_processor_id() == 0)
+		q->nr_requests = 100;
 
 	if (bio->bi_opf & REQ_NOWAIT)
 		flags = BLK_MQ_REQ_NOWAIT;
