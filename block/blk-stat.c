@@ -29,12 +29,17 @@ void blk_rq_stat_sum(struct blk_rq_stat *dst, struct blk_rq_stat *src)
 {
 	if (!src->nr_samples)
 		return;
-
+//	printk(KERN_INFO "I'm in blk_rq_stat_sum\n");
 	dst->min = min(dst->min, src->min);
 	dst->max = max(dst->max, src->max);
+	
+	//add
+	dst->mean = src->mean;
+//	printk(KERN_INFO "src->mean = %d\n", (int)src->mean);
+//	dst->mean = div_u64(src->batch + dst->mean * dst->nr_samples,
+//				dst->nr_samples + src->nr_samples);
 
-	dst->mean = div_u64(src->batch + dst->mean * dst->nr_samples,
-				dst->nr_samples + src->nr_samples);
+//	printk(KERN_INFO "dst->mean = %d\n", (int)dst->mean);
 
 	dst->nr_samples += src->nr_samples;
 }

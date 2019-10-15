@@ -82,6 +82,9 @@
 static struct blkcg_policy blkcg_policy_iolatency;
 struct iolatency_grp;
 
+//add
+//u64 dy_latency = 0;
+
 struct blk_iolatency {
 	struct rq_qos rqos;
 	struct timer_list timer;
@@ -197,8 +200,6 @@ static void __blkcg_iolatency_throttle(struct rq_qos *rqos,
 	unsigned use_delay = atomic_read(&lat_to_blkg(iolat)->use_delay);
 	DEFINE_WAIT(wait);
 	bool first_block = true;
-
-	//printk(KERN_INFO "I'm in __blkcg_iolatency_throttle\n");
 
 	if (use_delay)
 		blkcg_schedule_throttle(rqos->q, use_memdelay);
@@ -336,8 +337,6 @@ static void check_scale_change(struct iolatency_grp *iolat)
 	unsigned int old;
 	int direction = 0;
 
-	//printk(KERN_INFO "I'm in check_scale_change\n");
-
 	if (lat_to_blkg(iolat)->parent == NULL)
 		return;
 
@@ -355,8 +354,6 @@ static void check_scale_change(struct iolatency_grp *iolat)
 		direction = 1;
 	else
 		return;
-
-	//printk(KERN_INFO "direction = %d\n", direction);
 
 	old = atomic_cmpxchg(&iolat->scale_cookie, our_cookie, cur_cookie);
 
@@ -438,9 +435,7 @@ out:
 			continue;
 		}
 
-		//printk(KERN_INFO "I'm in blkcg_iolatency_throttle\n");
 		check_scale_change(iolat);
-		//printk(KERN_INFO "finish check_scale_change\n");
 		__blkcg_iolatency_throttle(rqos, iolat, lock, issue_as_root,
 				     (bio->bi_opf & REQ_SWAP) == REQ_SWAP);
 		blkg = blkg->parent;
@@ -468,6 +463,8 @@ static void iolatency_record_time(struct iolatency_grp *iolat,
 
 	req_time = now - start;
 
+	//printk(KERN_INFO "req_time = %d\n", (int)req_time);
+
 	/*
 	 * We don't want to count issue_as_root bio's in the cgroups latency
 	 * statistics as it could skew the numbers downwards.
@@ -481,11 +478,19 @@ static void iolatency_record_time(struct iolatency_grp *iolat,
 
 	rq_stat = get_cpu_ptr(iolat->stats);
 	blk_rq_stat_add(rq_stat, req_time);
+
+	//10.14
+	rq_stat->mean = req_time;
+	//dy_latency = req_time;
+	//printk(KERN_INFO "req_time = %d\n", (int)req_time);
+	//printk(KERN_INFO "rq_stat->mean = %d\n", (int)rq_stat->mean);
+	//end
+
 	put_cpu_ptr(rq_stat);
 }
 
 #define BLKIOLATENCY_MIN_ADJUST_TIME (500 * NSEC_PER_MSEC)
-#define BLKIOLATENCY_MIN_GOOD_SAMPLES 5
+#define BLKIOLATENCY_MIN_GOOD_SAMPLES 1000000
 
 static void iolatency_check_latencies(struct iolatency_grp *iolat, u64 now)
 {
@@ -495,6 +500,8 @@ static void iolatency_check_latencies(struct iolatency_grp *iolat, u64 now)
 	struct blk_rq_stat stat;
 	unsigned long flags;
 	int cpu, exp_idx;
+
+//	printk(KERN_INFO "I'm in iolatency_check_latencies\n");
 
 	blk_rq_stat_init(&stat);
 	preempt_disable();
@@ -524,8 +531,9 @@ static void iolatency_check_latencies(struct iolatency_grp *iolat, u64 now)
 				  BLKIOLATENCY_EXP_BUCKET_SIZE));
 	CALC_LOAD(iolat->lat_avg, iolatency_exp_factors[exp_idx], stat.mean);
 
-	printk(KERN_INFO "I'm in iolatency_check_latencies\n");
-	printk(KERN_INFO "stat.mean = %d\niolat->min_lat_nsec = %d\n", (int)stat.mean, (int)iolat->min_lat_nsec);
+	//printk(KERN_INFO "dy_latency = %d\n", (int)dy_latency);
+	//printk(KERN_INFO "stat.mean = %d\n", (int)stat.mean);
+	//printk(KERN_INFO "iolat->min_lat_nsec = %d", (int)iolat->min_lat_nsec);
 
 	/* Everything is ok and we don't need to adjust the scale. */
 	if (stat.mean <= iolat->min_lat_nsec &&
@@ -547,7 +555,6 @@ static void iolatency_check_latencies(struct iolatency_grp *iolat, u64 now)
 	    stat.nr_samples >= BLKIOLATENCY_MIN_GOOD_SAMPLES) {
 		if (lat_info->scale_grp == iolat) {
 			lat_info->last_scale_event = now;
-			printk(KERN_INFO "goto scale_cookie_change true\n");
 			scale_cookie_change(iolat->blkiolat, lat_info, true);
 		}
 	} else if (stat.mean > iolat->min_lat_nsec) {
@@ -557,7 +564,6 @@ static void iolatency_check_latencies(struct iolatency_grp *iolat, u64 now)
 			WRITE_ONCE(lat_info->scale_lat, iolat->min_lat_nsec);
 			lat_info->scale_grp = iolat;
 		}
-		printk(KERN_INFO "goto scale_cookie_change false\n");
 		scale_cookie_change(iolat->blkiolat, lat_info, false);
 	}
 out:
@@ -731,15 +737,10 @@ static int iolatency_set_min_lat_nsec(struct blkcg_gq *blkg, u64 val)
 	struct iolatency_grp *iolat = blkg_to_lat(blkg);
 	u64 oldval = iolat->min_lat_nsec;
 
-	printk(KERN_INFO "I'm in iolatency_set_min_lat_nsec\n");
-	printk(KERN_INFO "oldval(iolat->min_lat_nsec) = %d\n", (int)oldval);
-
 	iolat->min_lat_nsec = val;
 	iolat->cur_win_nsec = max_t(u64, val << 4, BLKIOLATENCY_MIN_WIN_SIZE);
 	iolat->cur_win_nsec = min_t(u64, iolat->cur_win_nsec,
 				    BLKIOLATENCY_MAX_WIN_SIZE);
-
-	printk(KERN_INFO "finish iolatency_set_min_lat_nsec\n");
 
 	if (!oldval && val)
 		return 1;
@@ -782,8 +783,6 @@ static ssize_t iolatency_set_limit(struct kernfs_open_file *of, char *buf,
 	int ret;
 	int enable = 0;
 
-	printk(KERN_INFO "I'm in iolatency_set_limit\n");
-
 	ret = blkg_conf_prep(blkcg, &blkcg_policy_iolatency, buf, &ctx);
 	if (ret)
 		return ret;
@@ -800,8 +799,6 @@ static ssize_t iolatency_set_limit(struct kernfs_open_file *of, char *buf,
 		if (sscanf(tok, "%15[^=]=%20s", key, val) != 2)
 			goto out;
 
-		printk(KERN_INFO "key = %s\nval=%s\n", key, val);
-
 		if (!strcmp(key, "target")) {
 			u64 v;
 
@@ -816,16 +813,11 @@ static ssize_t iolatency_set_limit(struct kernfs_open_file *of, char *buf,
 		}
 	}
 
-	printk(KERN_INFO "lat_val = %d\n", (int)lat_val);
-
 	/* Walk up the tree to see if our new val is lower than it should be. */
 	blkg = ctx.blkg;
 	oldval = iolat->min_lat_nsec;
 
 	enable = iolatency_set_min_lat_nsec(blkg, lat_val);
-	
-	printk(KERN_INFO "enable = %d\n", enable);
-	
 	if (enable) {
 		WARN_ON_ONCE(!blk_get_queue(blkg->q));
 		blkg_get(blkg);

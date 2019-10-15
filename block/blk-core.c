@@ -35,9 +35,6 @@
 #include <linux/blk-cgroup.h>
 #include <linux/debugfs.h>
 #include <linux/bpf.h>
-#include <linux/smp.h>
-#include <linux/printk.h>
-
 
 #define CREATE_TRACE_POINTS
 #include <trace/events/block.h>
@@ -2057,9 +2054,7 @@ static blk_qc_t blk_queue_bio(struct request_queue *q, struct bio *bio)
 	}
 
 get_rq:
-	//printk(KERN_INFO "I'm in blk-core\n");
 	rq_qos_throttle(q, bio, q->queue_lock);
-	//printk(KERN_INFO "finish blk-core rq_qos_throttle\n");
 
 	/*
 	 * Grab a free request. This is might sleep but can not fail.
@@ -2395,22 +2390,6 @@ blk_qc_t generic_make_request(struct bio *bio)
 	blk_mq_req_flags_t flags = 0;
 	struct request_queue *q = bio->bi_disk->queue;
 	blk_qc_t ret = BLK_QC_T_NONE;
-
-/*
-	//09.30 add
-	if(smp_processor_id() == 0)
-		q->nr_requests = 100;
-	else if(smp_processor_id() == 2)
-		q->nr_requests = 50;
-	else if(smp_processor_id() == 4)
-		q->nr_requests = 25;
-	else if(smp_processor_id() == 6)
-		q->nr_requests = 10;
-	else
-		q->nr_requests = BLKDEV_MAX_RQ;
-*/
-	if(smp_processor_id() == 0)
-		q->nr_requests = 100;
 
 	if (bio->bi_opf & REQ_NOWAIT)
 		flags = BLK_MQ_REQ_NOWAIT;
