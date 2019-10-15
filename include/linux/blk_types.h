@@ -142,6 +142,11 @@ static inline void bio_issue_init(struct bio_issue *issue,
  * stacking drivers)
  */
 struct bio {
+	
+	//10.15
+	int check; 
+	//end
+
 	struct bio		*bi_next;	/* request queue link */
 	struct gendisk		*bi_disk;
 	unsigned int		bi_opf;		/* bottom bits req flags,

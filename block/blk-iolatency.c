@@ -420,7 +420,7 @@ static void blkcg_iolatency_throttle(struct rq_qos *rqos, struct bio *bio,
 	}
 	if (!blkg)
 		goto out;
-
+	
 	bio_issue_init(&bio->bi_issue, bio_sectors(bio));
 	bio_associate_blkg(bio, blkg);
 out:
@@ -561,6 +561,12 @@ static void blkcg_iolatency_done_bio(struct rq_qos *rqos, struct bio *bio)
 	bool issue_as_root = bio_issue_as_root_blkg(bio);
 	bool enabled = false;
 	int inflight = 0;
+
+	//10.15
+	//printk(KERN_INFO "start = %lld\n", (long long)bio->bi_issue.value);
+	//printk(KERN_INFO "now = %lld\n", (long long)now);
+	//printk(KERN_INFO "time = %lld\n", (long long)now - (long long)bio->bi_issue.value);
+	//end
 
 	blkg = bio->bi_blkg;
 	if (!blkg)

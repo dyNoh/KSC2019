@@ -5,6 +5,11 @@
 #include "blk-stat.h"
 #include "blk-mq-tag.h"
 
+//10.15
+extern u64 check_timer;
+extern struct request *min_rq;
+//end
+
 struct blk_mq_tag_set;
 
 /**

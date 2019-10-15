@@ -148,6 +148,11 @@ enum mq_rq_state {
  * especially blk_mq_rq_ctx_init() to take care of the added fields.
  */
 struct request {
+
+	//10.15
+	u64 check_timer;
+	//end
+	
 	struct request_queue *q;
 	struct blk_mq_ctx *mq_ctx;
 

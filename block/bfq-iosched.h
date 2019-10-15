@@ -230,6 +230,13 @@ struct bfq_ttime {
  * All the fields are protected by the queue lock of the containing bfqd.
  */
 struct bfq_queue {
+
+	//10.15
+	struct request *min_rq;
+	u64 check_timer;
+	
+	//end
+	
 	/* reference counter */
 	int ref;
 	/* parent bfq_data */
