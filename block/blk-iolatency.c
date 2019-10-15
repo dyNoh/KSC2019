@@ -562,12 +562,6 @@ static void blkcg_iolatency_done_bio(struct rq_qos *rqos, struct bio *bio)
 	bool enabled = false;
 	int inflight = 0;
 
-	//10.15
-	//printk(KERN_INFO "start = %lld\n", (long long)bio->bi_issue.value);
-	//printk(KERN_INFO "now = %lld\n", (long long)now);
-	//printk(KERN_INFO "time = %lld\n", (long long)now - (long long)bio->bi_issue.value);
-	//end
-
 	blkg = bio->bi_blkg;
 	if (!blkg)
 		return;

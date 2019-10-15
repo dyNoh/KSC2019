@@ -231,10 +231,9 @@ struct bfq_ttime {
  */
 struct bfq_queue {
 
-	//10.15
+	//10.16
 	struct request *min_rq;
 	u64 check_timer;
-	
 	//end
 	
 	/* reference counter */

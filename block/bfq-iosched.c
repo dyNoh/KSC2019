@@ -1670,11 +1670,14 @@ static void bfq_add_request(struct request *rq)
 
 	elv_rb_add(&bfqq->sort_list, rq);
 
-	//10.15
+	//10.16
+	printk(KERN_INFO "I'm in bfq_add_request\n");
+	printk(KERN_INFO "rq->check_timer = %lld\n", (long long)rq->check_timer);
+
 	if (bfqq->check_timer == 0 || rq->check_timer < bfqq->check_timer) {
 		bfqq->check_timer = rq->check_timer;
 		bfqq->min_rq = rq;
-		printk(KERN_INFO "bfqq->check_timer = %lld\n", bfqq->check_timer);
+		printk(KERN_INFO "bfqq->check_timer = %lld\n", (long long)bfqq->check_timer);
 	}
 	//end
 
@@ -3818,30 +3821,27 @@ static struct request *bfq_dispatch_rq_from_bfqq(struct bfq_data *bfqd,
 	struct request *rq = bfqq->next_rq;
 	unsigned long service_to_charge;
 
-	//10.15
-	//struct request *findq = bfqq->next_rq;
-	//struct list_head *p;
-	u64 temp;
+	//10.16
+/*	struct request *find_rq;
+	u64 temp = 0;
 	u64 now = ktime_to_ns(ktime_get());
-	if (now - bfqq->check_timer + 60000 > 123000/*targeted_latency*/) {
+	if ((now - bfqq->check_timer + 60000 > 123000) || (bfqq->min_rq == rq)) {
 		rq = bfqq->min_rq;
 
 		//timer reset
-		list_for_each_entry(bfqq, &bfqq->fifo, fifo) {
-			struct request *findq = bfqq->next_rq;
-			if (temp == 0 || findq->check_timer < temp) {
-				if (findq->check_timer != bfqq->check_timer) {
-					bfqq->check_timer = findq->check_timer;
-					bfqq->min_rq = findq;
+		list_for_each_entry(find_rq, &bfqq->fifo, queuelist) {
+			if (temp == 0 || find_rq->check_timer < temp) {
+				if(find_rq == rq) {
+					continue;
 				}
+				bfqq->check_timer = find_rq->check_timer;
+				bfqq->min_rq = find_rq;
+			}
+			else if (find_rq->check_timer == temp) {
+				break;
 			}
 		}
-	}
-	
-
-
-	//rq->bio->bi_issue.value = ktime_to_ns(ktime_get());
-
+	}*/
 	//end
 
 	service_to_charge = bfq_serv_to_charge(rq, bfqq);

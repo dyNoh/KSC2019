@@ -149,7 +149,7 @@ enum mq_rq_state {
  */
 struct request {
 
-	//10.15
+	//10.16
 	u64 check_timer;
 	//end
 	

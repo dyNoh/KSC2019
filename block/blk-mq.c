@@ -1842,9 +1842,9 @@ static blk_qc_t blk_mq_make_request(struct request_queue *q, struct bio *bio)
 
 	rq_qos_throttle(q, bio, NULL);
 
-	//10.15
+	//10.16
 	bio->bi_issue.value = ktime_to_ns(ktime_get());
-	printk(KERN_INFO "value = %lld\n", bio->bi_issue.value);
+	printk(KERN_INFO "value = %lld\n", (long long)bio->bi_issue.value);
 	//end
 
 	trace_block_getrq(q, bio, bio->bi_opf);
@@ -1857,10 +1857,10 @@ static blk_qc_t blk_mq_make_request(struct request_queue *q, struct bio *bio)
 		return BLK_QC_T_NONE;
 	}
 
-	//10.15 check request
+	//10.16 check request
 	if (rq->check_timer == 0 || bio->bi_issue.value < rq->check_timer) {
 		rq->check_timer = bio->bi_issue.value;
-		printk(KERN_INFO "rq->check_timer = %lld\n", rq->check_timer);
+		printk(KERN_INFO "rq->check_timer = %lld\n", (long long)rq->check_timer);
 	}
 	//end
 
