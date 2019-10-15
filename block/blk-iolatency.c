@@ -82,9 +82,6 @@
 static struct blkcg_policy blkcg_policy_iolatency;
 struct iolatency_grp;
 
-//add
-//u64 dy_latency = 0;
-
 struct blk_iolatency {
 	struct rq_qos rqos;
 	struct timer_list timer;
@@ -463,8 +460,6 @@ static void iolatency_record_time(struct iolatency_grp *iolat,
 
 	req_time = now - start;
 
-	//printk(KERN_INFO "req_time = %d\n", (int)req_time);
-
 	/*
 	 * We don't want to count issue_as_root bio's in the cgroups latency
 	 * statistics as it could skew the numbers downwards.
@@ -478,19 +473,11 @@ static void iolatency_record_time(struct iolatency_grp *iolat,
 
 	rq_stat = get_cpu_ptr(iolat->stats);
 	blk_rq_stat_add(rq_stat, req_time);
-
-	//10.14
-	rq_stat->mean = req_time;
-	//dy_latency = req_time;
-	//printk(KERN_INFO "req_time = %d\n", (int)req_time);
-	//printk(KERN_INFO "rq_stat->mean = %d\n", (int)rq_stat->mean);
-	//end
-
 	put_cpu_ptr(rq_stat);
 }
 
 #define BLKIOLATENCY_MIN_ADJUST_TIME (500 * NSEC_PER_MSEC)
-#define BLKIOLATENCY_MIN_GOOD_SAMPLES 1000000
+#define BLKIOLATENCY_MIN_GOOD_SAMPLES 5
 
 static void iolatency_check_latencies(struct iolatency_grp *iolat, u64 now)
 {
@@ -500,8 +487,6 @@ static void iolatency_check_latencies(struct iolatency_grp *iolat, u64 now)
 	struct blk_rq_stat stat;
 	unsigned long flags;
 	int cpu, exp_idx;
-
-//	printk(KERN_INFO "I'm in iolatency_check_latencies\n");
 
 	blk_rq_stat_init(&stat);
 	preempt_disable();
@@ -530,10 +515,6 @@ static void iolatency_check_latencies(struct iolatency_grp *iolat, u64 now)
 			div64_u64(iolat->cur_win_nsec,
 				  BLKIOLATENCY_EXP_BUCKET_SIZE));
 	CALC_LOAD(iolat->lat_avg, iolatency_exp_factors[exp_idx], stat.mean);
-
-	//printk(KERN_INFO "dy_latency = %d\n", (int)dy_latency);
-	//printk(KERN_INFO "stat.mean = %d\n", (int)stat.mean);
-	//printk(KERN_INFO "iolat->min_lat_nsec = %d", (int)iolat->min_lat_nsec);
 
 	/* Everything is ok and we don't need to adjust the scale. */
 	if (stat.mean <= iolat->min_lat_nsec &&
