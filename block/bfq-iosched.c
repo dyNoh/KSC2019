@@ -1672,7 +1672,8 @@ static void bfq_add_request(struct request *rq)
 
 	//10.16
 	printk(KERN_INFO "I'm in bfq_add_request\n");
-	printk(KERN_INFO "rq->check_timer = %lld\n", (long long)rq->check_timer);
+	printk(KERN_INFO "extern rq->check_timer = %lld\n", (long long)rq->check_timer);
+	printk(KERN_INFO "extern bfqq->check_timer = %lld\n", (long long)bfqq->check_timer);
 
 	if (bfqq->check_timer == 0 || rq->check_timer < bfqq->check_timer) {
 		bfqq->check_timer = rq->check_timer;
@@ -3822,10 +3823,10 @@ static struct request *bfq_dispatch_rq_from_bfqq(struct bfq_data *bfqd,
 	unsigned long service_to_charge;
 
 	//10.16
-/*	struct request *find_rq;
+	struct request *find_rq;
 	u64 temp = 0;
 	u64 now = ktime_to_ns(ktime_get());
-	if ((now - bfqq->check_timer + 60000 > 123000) || (bfqq->min_rq == rq)) {
+	/*if ((now - bfqq->check_timer + 60000 > 123000) || (bfqq->min_rq == rq)) {
 		rq = bfqq->min_rq;
 
 		//timer reset
@@ -3842,6 +3843,18 @@ static struct request *bfq_dispatch_rq_from_bfqq(struct bfq_data *bfqd,
 			}
 		}
 	}*/
+
+
+	list_for_each_entry(find_rq, &bfqq->fifo, queuelist) {
+		if (temp == 0 || find_rq->check_timer < temp) {
+			temp = find_rq->check_timer;
+		}
+		else if (find_rq->check_timer == temp) {
+			break;
+		}
+	}
+	printk(KERN_INFO "minimum = %lld\n", (long long)temp);
+
 	//end
 
 	service_to_charge = bfq_serv_to_charge(rq, bfqq);
