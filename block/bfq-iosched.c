@@ -1791,7 +1791,12 @@ static void bfq_remove_request(struct request_queue *q,
 	if (bfqq->next_rq == rq) {
 		bfqq->next_rq = bfq_find_next_rq(bfqd, bfqq, rq);
 		bfq_updated_next_req(bfqd, bfqq);
+	}//10.16
+	else if (bfqq->next_rq != rq) {
+		bfq_updated_next_req(bfqd,bfqq);
 	}
+	
+	//end
 
 	if (rq->queuelist.prev != &rq->queuelist)
 		list_del_init(&rq->queuelist);
@@ -3824,8 +3829,54 @@ static struct request *bfq_dispatch_rq_from_bfqq(struct bfq_data *bfqd,
 
 	//10.16
 	struct request *find_rq;
+	struct request *min_rq;
 	u64 temp = 0;
 	u64 now = ktime_to_ns(ktime_get());
+	
+	if (now - bfqq->check_timer + 60000 > 123000) {
+		printk(KERN_INFO "now = %lld\n", (long long)now);
+		printk(KERN_INFO "bfqq->check_timer = %lld\n", (long long)bfqq->check_timer);
+		printk(KERN_INFO "now - bfqq->check_timer = %lld\n", (long long)(now - bfqq->check_timer));
+		rq = bfqq->min_rq;
+	}
+
+	if (rq == bfqq->min_rq) {
+		printk("here\n");
+		list_for_each_entry(find_rq, &bfqq->fifo, queuelist) {
+			if (temp == 0 || find_rq->check_timer < temp) {
+				printk(KERN_INFO "temp = %lld\n", (long long)temp);
+				printk(KERN_INFO "find_rq->check_timer = %lld\n", (long long)find_rq->check_timer);
+				if(find_rq == rq) {
+					printk(KERN_INFO "hit\n");
+					continue;
+				}
+				else {
+					printk(KERN_INFO "ok\n");
+					temp = find_rq->check_timer;
+					min_rq = find_rq;
+				}
+			}
+		}
+		bfqq->check_timer = temp;
+		bfqq->min_rq = find_rq;
+	}
+
+	/*
+	if (rq == bfqq->min_rq) {
+		printk(KERN_INFO "here\n");
+		list_for_each_entry(find_rq, &bfqq->fifo, queuelist) {
+			if( temp == 0 || find_rq->check_timer < temp) {
+				if(find_rq == rq) {
+					printk(KERN_INFO "hit\n");
+					continue;
+				}
+				printk(KERN_INFO "ok\n");
+				bfqq->check_timer = find_rq->check_timer;
+				bfqq->min_rq = find_rq;
+			}
+		}
+	}*/
+	
 	/*if ((now - bfqq->check_timer + 60000 > 123000) || (bfqq->min_rq == rq)) {
 		rq = bfqq->min_rq;
 
@@ -3838,23 +3889,17 @@ static struct request *bfq_dispatch_rq_from_bfqq(struct bfq_data *bfqd,
 				bfqq->check_timer = find_rq->check_timer;
 				bfqq->min_rq = find_rq;
 			}
-			else if (find_rq->check_timer == temp) {
-				break;
-			}
 		}
 	}*/
 
 
-	list_for_each_entry(find_rq, &bfqq->fifo, queuelist) {
+	/*list_for_each_entry(find_rq, &bfqq->fifo, queuelist) {
 		if (temp == 0 || find_rq->check_timer < temp) {
 			temp = find_rq->check_timer;
 		}
-		else if (find_rq->check_timer == temp) {
-			break;
-		}
 	}
 	printk(KERN_INFO "minimum = %lld\n", (long long)temp);
-
+*/
 	//end
 
 	service_to_charge = bfq_serv_to_charge(rq, bfqq);
