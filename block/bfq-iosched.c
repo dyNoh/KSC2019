@@ -1672,13 +1672,14 @@ static void bfq_add_request(struct request *rq)
 
 	//10.16
 	printk(KERN_INFO "I'm in bfq_add_request\n");
-	printk(KERN_INFO "extern rq->check_timer = %lld\n", (long long)rq->check_timer);
+	printk(KERN_INFO "extern rq->bio->bi_issue.value = %lld\n", (long long)rq->bio->bi_issue.value);
 	printk(KERN_INFO "extern bfqq->check_timer = %lld\n", (long long)bfqq->check_timer);
 
-	if (bfqq->check_timer == 0 || rq->check_timer < bfqq->check_timer) {
-		bfqq->check_timer = rq->check_timer;
+	if (bfqq->check_timer == 0 || rq->bio->bi_issue.value < bfqq->check_timer) {
+		bfqq->check_timer = rq->bio->bi_issue.value;
 		bfqq->min_rq = rq;
-		printk(KERN_INFO "bfqq->check_timer = %lld\n", (long long)bfqq->check_timer);
+		printk(KERN_INFO "OK bfqq->check_timer = %lld\n", (long long)bfqq->check_timer);
+		printk(KERN_INFO "OK rq->bio->bi_issue.value = %lld\n", (long long)rq->bio->bi_issue.value);
 	}
 	//end
 
@@ -3832,34 +3833,53 @@ static struct request *bfq_dispatch_rq_from_bfqq(struct bfq_data *bfqd,
 	struct request *min_rq;
 	u64 temp = 0;
 	u64 now = ktime_to_ns(ktime_get());
-	
+
+	printk(KERN_INFO "rq->bio->bi_issue.value = %lld\n", (long long)rq->bio->bi_issue.value);
+	printk(KERN_INFO "bfqq->next_rq->bio->bi_issue.value = %lld\n", (long long)bfqq->next_rq->bio->bi_issue.value);
+	printk(KERN_INFO "now = %lld\n", (long long)now);
+
 	if (now - bfqq->check_timer + 60000 > 123000) {
 		printk(KERN_INFO "now = %lld\n", (long long)now);
 		printk(KERN_INFO "bfqq->check_timer = %lld\n", (long long)bfqq->check_timer);
 		printk(KERN_INFO "now - bfqq->check_timer = %lld\n", (long long)(now - bfqq->check_timer));
-		rq = bfqq->min_rq;
+		if(bfqq->min_rq) {
+			rq = bfqq->min_rq;
+		}
+		//rq = bfqq->min_rq;
 	}
 
 	if (rq == bfqq->min_rq) {
-		printk("here\n");
+		int count = 0;
+		printk("start list_for_each_entry\n");
 		list_for_each_entry(find_rq, &bfqq->fifo, queuelist) {
-			if (temp == 0 || find_rq->check_timer < temp) {
+			if (temp == 0 || find_rq->bio->bi_issue.value < temp) {
 				printk(KERN_INFO "temp = %lld\n", (long long)temp);
-				printk(KERN_INFO "find_rq->check_timer = %lld\n", (long long)find_rq->check_timer);
+				printk(KERN_INFO "find_rq->bio->bi_issue.value = %lld\n", (long long)find_rq->bio->bi_issue.value);
+				/*if (count) {
+					printk(KERN_INFO "OK\n");
+					temp = find_rq->bio->bi_issue.value;
+					min_rq = find_rq;
+				}
+				else{
+					count++;
+					//continue;
+				}*/
 				if(find_rq == rq) {
-					printk(KERN_INFO "hit\n");
+					printk(KERN_INFO "hit\n");				
 					continue;
 				}
 				else {
-					printk(KERN_INFO "ok\n");
-					temp = find_rq->check_timer;
+					printk(KERN_INFO "OK\n");
+					temp = find_rq->bio->bi_issue.value;
 					min_rq = find_rq;
 				}
 			}
 		}
 		bfqq->check_timer = temp;
-		bfqq->min_rq = find_rq;
+		bfqq->min_rq = min_rq;
 	}
+
+	//if queue 1
 
 	/*
 	if (rq == bfqq->min_rq) {
